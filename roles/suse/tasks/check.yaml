@@ -1,0 +1,27 @@
+---
+
+- name: set swap_partition variable
+  set_fact:
+    swap_partition: "{{ swap_partition_path }}"
+
+- name: check if swap partition exists
+  stat:
+    path: "{{ swap_partition_path }}"
+  register: swap_partition_check
+
+- name: Make swap partition
+  command: "sudo mkswap {{ swap_partition_path }}"
+  when: not swap_partition_check.stat.exists
+
+
+- name: Write swap entry in fstab
+  mount: name=none
+         src={{ swap_partition_path }}
+         fstype=swap
+         opts=sw
+         passno=0
+         dump=0
+         state=present
+
+- name: Turn on swap
+  command: swapon -a
